@@ -1,0 +1,324 @@
+/* =========================
+   Base
+========================= */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+}
+
+.page {
+  flex: 1;
+  padding: 16px;
+
+  /* ★ここが重要：表をもっと横に使う */
+  max-width: 1400px;   /* 1100 → 1400（好みで1600でもOK） */
+  margin: 0 auto;
+}
+
+
+.title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #263238;
+}
+
+/* =========================
+   Footer
+========================= */
+.app-footer {
+  height: 56px;
+  background: #eceff1;
+  border-top: 1px solid #cfd8dc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #455a64;
+}
+
+/* =========================
+   Header
+========================= */
+.header-title {
+  text-decoration: none;
+  color: inherit;
+  font-weight: 700;
+}
+
+.header-title:hover { opacity: 0.8; }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  height: 76px;
+  background: #eceff1;
+  border-bottom: 1px solid #cfd8dc;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.app-header > div {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* 左：タイトル */
+.header-left {
+  padding-left: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #263238;
+  letter-spacing: 0.5px;
+}
+
+/* 中央：日付 */
+.header-center {
+  justify-content: center;
+  gap: 12px;
+}
+
+.date-display{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.date-trigger{
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: center;
+}
+
+.date-year{ font-size: 14px; color: #607d8b; }
+.date-md{ font-size: 26px; font-weight: 600; color: #263238; }
+.date-week{ font-size: 14px; color: #455a64; margin-top: 2px; }
+
+.date-picker{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.date-trigger:hover{
+  background: rgba(0,0,0,0.06);
+  border-radius: 10px;
+}
+
+.date-btn {
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  color: #455a64;
+  padding: 4px;
+}
+
+.date-btn:hover {
+  background: rgba(0,0,0,0.08);
+  border-radius: 4px;
+}
+
+/* 右：メニュー */
+.header-right {
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
+.menu-btn {
+  font-size: 22px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #263238;
+}
+
+.menu-btn:hover { background: rgba(0,0,0,0.08); }
+
+/* =========================
+   Schedule（ここが本題）
+   ★時間設定はCSSに集約（JSが読む）
+========================= */
+:root {
+  --line: #111;
+  --soft: #d1d5db;
+  --header-bg: #f3f4f6;
+
+  --draft: rgba(99, 102, 241, 0.25);
+  --reserved: rgba(16, 185, 129, 0.30);
+
+  /* 教室列幅：広すぎ問題を解決 */
+  --label-w: 100px;   /* 140px → 100px（B31ならこれで十分） */
+
+  --row-h: 56px;
+
+  /* ★表示時間：9〜17（ここだけ変えればOK） */
+  --start-hour: 9;
+  --end-hour: 17;
+
+  --hours: calc(var(--end-hour) - var(--start-hour));
+  --hour-w: calc(100% / var(--hours));
+}
+
+.schedule {
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+
+  min-width: 980px; /* ★時間が潰れない最低幅（必要なら調整） */
+}
+
+
+/* ヘッダー */
+.time-header {
+  display: grid;
+  grid-template-columns: var(--label-w) 1fr;
+  background: #fff;
+  border-bottom: 2px solid var(--line);
+}
+
+.time-header .corner {
+  background: var(--header-bg);
+  border-right: 2px solid var(--line);
+  height: 44px;
+}
+
+.timeline {
+  position: relative;
+  height: 44px;
+  background: var(--header-bg);
+}
+
+/* JSで入れる時間ラベル */
+.time-label {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;        /* 12 → 11 */
+  border-left: 1px solid var(--line);
+  color: #111;
+}
+
+
+/* 行 */
+.rows {
+  min-width: 0; /* ★横スクロール原因を潰す */
+}
+
+.row {
+  display: grid;
+  grid-template-columns: var(--label-w) 1fr;
+  border-bottom: 2px solid var(--line);
+  height: var(--row-h);
+}
+
+.row:nth-child(odd) { background: #ffffff; }
+.row:nth-child(even) { background: #f9fafb; }
+
+.room {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-weight: 700;
+  border-right: 2px solid var(--line);
+  background: inherit;
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+/* レーン */
+.lane {
+  position: relative;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* 1時間ごとの縦線（CSS変数の時間に追従） */
+.lane::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      rgba(17, 17, 17, 0.25) 0px,
+      rgba(17, 17, 17, 0.25) 1px,
+      transparent 1px,
+      transparent var(--hour-w)
+    );
+}
+
+/* ドラッグ中の仮ブロック */
+.block {
+  position: absolute;
+  top: 8px;
+  height: calc(100% - 16px);
+  border-radius: 8px;
+  background: var(--draft);
+  outline: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+/* 確定済み */
+.block.is-reserved {
+  background: var(--reserved);
+  outline: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+/* 情報表示 */
+.drag-info {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--header-bg);
+  border: 1px solid var(--soft);
+  border-radius: 8px;
+  font-size: 14px;
+  min-height: 20px;
+  display: none;
+}
+
+.drag-info.active { display: block; }
+
+
+/* =========================
+   Actions
+========================= */
+.actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.clear-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #cfd8dc;
+  background: #f5f5f5;
+  color: #374151;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  background: #e5e7eb;
+}
