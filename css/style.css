@@ -161,7 +161,7 @@ body {
   --reserved: rgba(16, 185, 129, 0.30);
 
   /* 教室列幅：広すぎ問題を解決 */
-  --label-w: 100px;   /* 140px → 100px（B31ならこれで十分） */
+  --label-w: 120px;   /* 140px → 100px（B31ならこれで十分） */
 
   --row-h: 56px;
 
@@ -237,7 +237,7 @@ body {
   display: flex;
   align-items: center;
   padding: 0 10px;
-  font-weight: 700;
+  font-weight: 00;
   border-right: 2px solid var(--line);
   background: inherit;
   position: sticky;
