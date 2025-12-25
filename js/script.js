@@ -58,12 +58,13 @@ function initDateHeader() {
 }
 
 /* =========================
-   Schedule (Drag)
+   Schedule (Drag)  ※ID対応版
 ========================= */
 function initSchedule() {
   const header = document.getElementById("timelineHeader");
   const dragInfo = document.getElementById("dragInfo");
   const lanes = document.querySelectorAll(".lane");
+  const clearBtn = document.getElementById("clearSelectionBtn");
 
   // 画面にスケジュール要素がないページでは何もしない
   if (!header || !dragInfo || lanes.length === 0) return;
@@ -77,7 +78,8 @@ function initSchedule() {
 
   renderTimeHeader(header, START_HOUR, END_HOUR);
 
-  let dragging = null; // { lane, room, startMinutes, blockEl }
+  // dragging はこの関数の中で管理する（外に出さない）
+  let dragging = null; // { lane, roomId, roomName, startMinutes, blockEl }
 
   lanes.forEach((lane) => {
     lane.addEventListener("pointerdown", (e) => {
@@ -92,7 +94,12 @@ function initSchedule() {
       block.className = "block";
       lane.appendChild(block);
 
-      dragging = { lane, room: lane.dataset.room, startMinutes: start, blockEl: block };
+      // ★ID/名前を lane の data-* から取得
+      const roomId = lane.dataset.roomId || "";
+      const roomName = lane.dataset.roomName || lane.dataset.room || "";
+
+      dragging = { lane, roomId, roomName, startMinutes: start, blockEl: block };
+
       updateBlock(dragging, start, START_HOUR, END_HOUR);
       updateDragInfo(dragInfo, dragging, start, START_HOUR);
     });
@@ -125,9 +132,12 @@ function initSchedule() {
         return;
       }
 
+      // ★確定ブロックに内部情報を埋める（画面には出さない）
       dragging.blockEl.classList.add("is-reserved");
-      dragging.blockEl.dataset.from = from;
-      dragging.blockEl.dataset.to = to;
+      dragging.blockEl.dataset.from = String(from);
+      dragging.blockEl.dataset.to = String(to);
+      dragging.blockEl.dataset.roomId = String(dragging.roomId);
+      dragging.blockEl.dataset.roomName = String(dragging.roomName);
 
       dragging = null;
       clearDragInfo(dragInfo);
@@ -140,8 +150,24 @@ function initSchedule() {
       clearDragInfo(dragInfo);
     });
   });
+
+  /* ===== 選択クリア（確実に動く版） =====
+     - block を全部消す
+     - dragInfo を消す
+     - dragging をnullに戻す（このスコープ内だから効く）
+  */
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      document.querySelectorAll(".lane .block").forEach((block) => block.remove());
+      dragging = null;
+      clearDragInfo(dragInfo);
+    });
+  }
 }
 
+/* =========================
+   Utils
+========================= */
 function renderTimeHeader(container, START_HOUR, END_HOUR) {
   container.innerHTML = "";
   const hours = END_HOUR - START_HOUR;
@@ -199,27 +225,12 @@ function updateDragInfo(dragInfoEl, state, currentMinutes, START_HOUR) {
   const fromTime = minutesToTimeString(from, START_HOUR);
   const toTime = minutesToTimeString(to, START_HOUR);
 
-  dragInfoEl.textContent = `${state.room}の${fromTime}から${toTime}までがドラッグされました。`;
+  // ★表示は教室名だけ
+  dragInfoEl.textContent = `${state.roomName}の${fromTime}から${toTime}までがドラッグされました。`;
   dragInfoEl.classList.add("active");
 }
 
 function clearDragInfo(dragInfoEl) {
   dragInfoEl.classList.remove("active");
   dragInfoEl.textContent = "";
-}
-
-/* ===== 選択クリア ===== */
-const clearBtn = document.getElementById("clearSelectionBtn");
-
-if (clearBtn) {
-  clearBtn.addEventListener("click", () => {
-    // 予約・仮予約ブロックを全削除
-    document.querySelectorAll(".lane .block").forEach(block => {
-      block.remove();
-    });
-
-    // ドラッグ中状態もリセット
-    dragging = null;
-    clearDragInfo();
-  });
 }
