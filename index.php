@@ -46,7 +46,7 @@ $rooms = $stmt->fetchAll(); // [["classroom_id"=>..., "classroom_name"=>...], ..
   </header>
 
   <main class="page">
-    <h1 class="title">本日の予約（ドラッグで仮予約）</h1>
+    <h1 class="title">本日の利用状況</h1>
 
     <div class="schedule">
       <!-- 上：時間ヘッダー -->
